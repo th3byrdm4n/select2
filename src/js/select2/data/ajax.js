@@ -7,6 +7,9 @@ define([
     this.ajaxOptions = this._applyDefaults(options.get('ajax'));
 
     if (this.ajaxOptions.processResults != null) {
+      if (typeof this.ajaxOptions.processResults !== 'function') {
+          this.ajaxOptions.processResults = Utils.getFunctionByName(this.ajaxOptions.processResults)
+      }
       this.processResults = this.ajaxOptions.processResults;
     }
 

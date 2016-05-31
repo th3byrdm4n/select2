@@ -272,5 +272,15 @@ define([
     $element.append($nodes);
   };
 
+  Utils.getFunctionByName = function (functionName, context) {
+      context = (typeof context === 'undefined') ? window : context;
+      var namespaces = functionName.split(".");
+      var func = namespaces.pop();
+      for (var i = 0; i < namespaces.length; i++) {
+          context = context[namespaces[i]];
+      }
+      return context[func];
+  };
+
   return Utils;
 });
