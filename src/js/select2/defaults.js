@@ -1,5 +1,7 @@
 define([
   'jquery',
+  'require',
+
   './results',
 
   './selection/single',
@@ -32,7 +34,9 @@ define([
   './dropdown/closeOnSelect',
 
   './i18n/en'
-], function ($, ResultsList,
+], function ($, require,
+
+             ResultsList,
 
              SingleSelection, MultipleSelection, Placeholder, AllowClear,
              SelectionSearch, EventRelay,
@@ -51,7 +55,7 @@ define([
   }
 
   Defaults.prototype.apply = function (options) {
-    options = $.extend({}, this.defaults, options);
+    options = $.extend(true, {}, this.defaults, options);
 
     if (options.dataAdapter == null) {
       if (options.ajax != null) {
@@ -83,7 +87,7 @@ define([
         );
       }
 
-      if (options.tags != null) {
+      if (options.tags) {
         options.dataAdapter = Utils.Decorate(options.dataAdapter, Tags);
       }
 
@@ -147,7 +151,7 @@ define([
         options.dropdownAdapter = SearchableDropdown;
       }
 
-      if (options.minimumResultsForSearch > 0) {
+      if (options.minimumResultsForSearch !== 0) {
         options.dropdownAdapter = Utils.Decorate(
           options.dropdownAdapter,
           MinimumResultsForSearch
@@ -158,6 +162,19 @@ define([
         options.dropdownAdapter = Utils.Decorate(
           options.dropdownAdapter,
           CloseOnSelect
+        );
+      }
+
+      if (
+        options.dropdownCssClass != null ||
+        options.dropdownCss != null ||
+        options.adaptDropdownCssClass != null
+      ) {
+        var DropdownCSS = require(options.amdBase + 'compat/dropdownCss');
+
+        options.dropdownAdapter = Utils.Decorate(
+          options.dropdownAdapter,
+          DropdownCSS
         );
       }
 
@@ -196,6 +213,19 @@ define([
         );
       }
 
+      if (
+        options.containerCssClass != null ||
+        options.containerCss != null ||
+        options.adaptContainerCssClass != null
+      ) {
+        var ContainerCSS = require(options.amdBase + 'compat/containerCss');
+
+        options.selectionAdapter = Utils.Decorate(
+          options.selectionAdapter,
+          ContainerCSS
+        );
+      }
+
       options.selectionAdapter = Utils.Decorate(
         options.selectionAdapter,
         EventRelay
@@ -203,7 +233,7 @@ define([
     }
 
     if (typeof options.language === 'string') {
-      // Check if the lanugage is specified with a region
+      // Check if the language is specified with a region
       if (options.language.indexOf('-') > 0) {
         // Extract the region information if it is included
         var languageParts = options.language.split('-');
@@ -237,9 +267,9 @@ define([
             // The translation could not be loaded at all. Sometimes this is
             // because of a configuration problem, other times this can be
             // because of how Select2 helps load all possible translation files.
-            if (window.console && console.warn) {
+            if (options.debug && window.console && console.warn) {
               console.warn(
-                'Select2: The lanugage file for "' + name + '" could not be ' +
+                'Select2: The language file for "' + name + '" could not be ' +
                 'automatically loaded. A fallback will be used instead.'
               );
             }
@@ -253,7 +283,14 @@ define([
 
       options.translations = languages;
     } else {
-      options.translations = new Translation(options.language);
+      var baseTranslation = Translation.loadPath(
+        this.defaults.amdLanguageBase + 'en'
+      );
+      var customTranslation = new Translation(options.language);
+
+      customTranslation.extend(baseTranslation);
+
+      options.translations = customTranslation;
     }
 
     return options;
@@ -315,9 +352,11 @@ define([
     }
 
     this.defaults = {
-      amdBase: 'select2/',
-      amdLanguageBase: 'select2/i18n/',
+      amdBase: './',
+      amdLanguageBase: './i18n/',
       closeOnSelect: true,
+      debug: false,
+      dropdownAutoWidth: false,
       escapeMarkup: Utils.escapeMarkup,
       language: EnglishTranslation,
       matcher: matcher,

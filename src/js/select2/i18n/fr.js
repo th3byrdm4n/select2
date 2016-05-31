@@ -1,6 +1,9 @@
 define(function () {
   // French
   return {
+    errorLoading: function () {
+      return 'Les résultats ne peuvent pas être chargés.';
+    },
     inputTooLong: function (args) {
       var overChars = args.input.length - args.maximum;
 
@@ -26,7 +29,7 @@ define(function () {
     loadingMore: function () {
       return 'Chargement de résultats supplémentaires…';
     },
-    maximumSelection: function (args) {
+    maximumSelected: function (args) {
       var message = 'Vous pouvez seulement sélectionner ' +
         args.maximum + ' élément';
 

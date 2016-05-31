@@ -30,7 +30,9 @@ define([
   SelectAdapter.prototype.select = function (data) {
     var self = this;
 
-    // If data.element is a DOM nose, use it instead
+    data.selected = true;
+
+    // If data.element is a DOM node, use it instead
     if ($(data.element).is('option')) {
       data.element.selected = true;
 
@@ -61,7 +63,6 @@ define([
       var val = data.id;
 
       this.$element.val(val);
-
       this.$element.trigger('change');
     }
   };
@@ -72,6 +73,8 @@ define([
     if (!this.$element.prop('multiple')) {
       return;
     }
+
+    data.selected = false;
 
     if ($(data.element).is('option')) {
       data.element.selected = false;
@@ -147,6 +150,10 @@ define([
     });
   };
 
+  SelectAdapter.prototype.addOptions = function ($options) {
+    Utils.appendMany(this.$element, $options);
+  };
+
   SelectAdapter.prototype.option = function (data) {
     var option;
 
@@ -202,7 +209,7 @@ define([
     if ($option.is('option')) {
       data = {
         id: $option.val(),
-        text: $option.html(),
+        text: $option.text(),
         disabled: $option.prop('disabled'),
         selected: $option.prop('selected'),
         title: $option.prop('title')

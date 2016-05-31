@@ -9,14 +9,25 @@ define([
     decorated.call(this, container, $container);
 
     container.on('select', function (evt) {
-      var originalEvent = evt.originalEvent;
+      self._selectTriggered(evt);
+    });
 
-      // Don't close if the control key is being held
-      if (originalEvent && originalEvent.ctrlKey) {
-        return;
-      }
+    container.on('unselect', function (evt) {
+      self._selectTriggered(evt);
+    });
+  };
 
-      self.trigger('close');
+  CloseOnSelect.prototype._selectTriggered = function (_, evt) {
+    var originalEvent = evt.originalEvent;
+
+    // Don't close if the control key is being held
+    if (originalEvent && originalEvent.ctrlKey) {
+      return;
+    }
+
+    this.trigger('close', {
+      originalEvent: originalEvent,
+      originalSelect2Event: evt
     });
   };
 

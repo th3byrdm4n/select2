@@ -4,7 +4,7 @@ var ArrayData = require('select2/data/array');
 var $ = require('jquery');
 var Options = require('select2/options');
 
-var options = new Options({
+var arrayOptions = new Options({
   data: [
     {
       id: 'default',
@@ -17,6 +17,21 @@ var options = new Options({
     {
       id: '2',
       text: '2'
+    }
+  ]
+});
+
+var extraOptions = new Options ({
+  data: [
+    {
+      id: 'default',
+      text: 'Default',
+      extra: true
+    },
+    {
+      id: 'One',
+      text: 'One',
+      extra: true
     }
   ]
 });
@@ -41,9 +56,9 @@ var nestedOptions = new Options({
 });
 
 test('current gets default for single', function (assert) {
-  var $select = $('#qunit-fixture .single');
+  var $select = $('#qunit-fixture .single-empty');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   data.current(function (val) {
     assert.equal(
@@ -65,7 +80,7 @@ test('current gets default for single', function (assert) {
 test('current gets default for multiple', function (assert) {
   var $select = $('#qunit-fixture .multiple');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   data.current(function (val) {
     assert.equal(
@@ -79,9 +94,9 @@ test('current gets default for multiple', function (assert) {
 test('current works with existing selections', function (assert) {
   var $select = $('#qunit-fixture .multiple');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
-  $select.val(['3']);
+  $select.val(['One']);
 
   data.current(function (val) {
     assert.equal(
@@ -94,22 +109,22 @@ test('current works with existing selections', function (assert) {
 
     assert.equal(
       option.id,
-      '3',
+      'One',
       'The id should be equal to the value of the option tag.'
     );
 
     assert.equal(
       option.text,
-      'Three',
+      'One',
       'The text should be equal to the text of the option tag.'
     );
   });
 });
 
 test('current works with selected data', function (assert) {
-  var $select = $('#qunit-fixture .single');
+  var $select = $('#qunit-fixture .single-empty');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   data.select({
     id: '2',
@@ -140,9 +155,9 @@ test('current works with selected data', function (assert) {
 });
 
 test('select works for single', function (assert) {
-  var $select = $('#qunit-fixture .single');
+  var $select = $('#qunit-fixture .single-empty');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   assert.equal(
     $select.val(),
@@ -165,7 +180,7 @@ test('select works for single', function (assert) {
 test('multiple sets the value', function (assert) {
   var $select = $('#qunit-fixture .multiple');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   assert.equal($select.val(), null);
 
@@ -180,24 +195,24 @@ test('multiple sets the value', function (assert) {
 test('multiple adds to the old value', function (assert) {
   var $select = $('#qunit-fixture .multiple');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
-  $select.val(['3']);
+  $select.val(['One']);
 
-  assert.deepEqual($select.val(), ['3']);
+  assert.deepEqual($select.val(), ['One']);
 
   data.select({
     id: 'default',
     text: 'Default'
   });
 
-  assert.deepEqual($select.val(), ['3', 'default']);
+  assert.deepEqual($select.val(), ['One', 'default']);
 });
 
 test('option tags are automatically generated', function (assert) {
-  var $select = $('#qunit-fixture .single');
+  var $select = $('#qunit-fixture .single-empty');
 
-  var data = new ArrayData($select, options);
+  var data = new ArrayData($select, arrayOptions);
 
   assert.equal(
     $select.find('option').length,
@@ -206,8 +221,38 @@ test('option tags are automatically generated', function (assert) {
   );
 });
 
-test('optgroup tags can also be generated', function (assert) {
+test('option tags can receive new data', function(assert) {
   var $select = $('#qunit-fixture .single');
+
+  var data = new ArrayData($select, extraOptions);
+
+  assert.equal(
+    $select.find('option').length,
+    2,
+    'Only one more <option> element should be created'
+  );
+
+  data.select({
+    id: 'default'
+  });
+
+  assert.ok(
+    $select.find(':selected').data('data').extra,
+    '<option> default should have new data'
+  );
+
+  data.select({
+    id: 'One'
+  });
+
+  assert.ok(
+    $select.find(':selected').data('data').extra,
+    '<option> One should have new data'
+  );
+});
+
+test('optgroup tags can also be generated', function (assert) {
+  var $select = $('#qunit-fixture .single-empty');
 
   var data = new ArrayData($select, nestedOptions);
 
@@ -225,7 +270,7 @@ test('optgroup tags can also be generated', function (assert) {
 });
 
 test('optgroup tags have the right properties', function (assert) {
-  var $select = $('#qunit-fixture .single');
+  var $select = $('#qunit-fixture .single-empty');
 
   var data = new ArrayData($select, nestedOptions);
 
@@ -242,4 +287,32 @@ test('optgroup tags have the right properties', function (assert) {
     1,
     'The <optgroup> should have one child under it'
   );
+});
+
+test('existing selections are respected on initialization', function (assert) {
+   var $select = $(
+     '<select>' +
+        '<option>First</option>' +
+        '<option selected>Second</option>' +
+      '</select>'
+    );
+
+    var options = new Options({
+      data: [
+        {
+          id: 'Second',
+          text: 'Second'
+        },
+        {
+          id: 'Third',
+          text: 'Third'
+        }
+      ]
+    });
+
+    assert.equal($select.val(), 'Second');
+
+    var data = new ArrayData($select, options);
+
+    assert.equal($select.val(), 'Second');
 });

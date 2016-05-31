@@ -1,6 +1,9 @@
 define(function () {
   // Norwegian (Bokmål)
   return {
+    errorLoading: function () {
+      return 'Kunne ikke hente resultater.';
+    },
     inputTooLong: function (args) {
       var overChars = args.input.length - args.maximum;
 
@@ -22,7 +25,7 @@ define(function () {
     loadingMore: function () {
       return 'Laster flere resultater…';
     },
-    maximumSelection: function (args) {
+    maximumSelected: function (args) {
       return 'Du kan velge maks ' + args.maximum + ' elementer';
     },
     noResults: function () {
